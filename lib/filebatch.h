@@ -6,10 +6,10 @@
 #include <stddef.h>  // For size_t
 
 #define BUFFER_SIZE ( 1 << 16 )
-#define PRINT_TIME 1
+#define PRINT_TIME 0
 
 #if PRINT_TIME
-#include <time.h>   // For clock_t, clock(), CLOCKS_PER_SEC
+#include <time.h>   
 #endif
 
 

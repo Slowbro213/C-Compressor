@@ -25,7 +25,7 @@ void bw_write_bit(BitWriter *bw, uint8_t bits,int length) {
 
 int bw_flush(BitWriter *bw) {
     if (bw->bit_pos > 0) {
-        bw->byte <<= (8 - bw->bit_pos);  // Shift remaining bits to the left
+        bw->byte <<= (8 - bw->bit_pos);  
         fwrite(&bw->byte, sizeof(uint8_t), 1, bw->file);
         bw->byte = 0;
     }

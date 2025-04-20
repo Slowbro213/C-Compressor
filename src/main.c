@@ -1,6 +1,7 @@
 #include "../lib/hashmap.h"
 #include "../lib/filebatch.h"
 #include "../lib/BitWriter.h"
+#include "../lib/Packer.h"
 #include <stdio.h>
 #include <stddef.h>
 #include <time.h>
@@ -8,17 +9,10 @@
 #include <string.h> 
 
 
-// Processor function
-void count_frequencies(uint8_t* chunk, size_t size, void* args) {
-  ByteFreqMap* freq_map = (ByteFreqMap*)args;
-  for (size_t i = 0; i < size; i++) {
-    bfm_increment(freq_map, chunk[i]);
-  }
-}
 
 int main(int argc, char *argv[]) {
-  if (argc != 2) {
-    fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
+  if (argc != 3) {
+    fprintf(stderr, "Usage: %s <filename> <outputfile>\n", argv[0]);
     return 1;
   }
 
@@ -43,40 +37,28 @@ int main(int argc, char *argv[]) {
   // Sort the frequency map by frequency
   bfm_sort_by_freq(&freq_map);
 
-
-  fclose(file);
-
-
   bfm_huffman_tree(&freq_map);
 
-  //Test for bit Writer
-  FILE *output_file = fopen("output.bin", "wb");
 
+  // Open the output file for writing
+  // Note: "wb" for binary mode
+  FILE *output_file = fopen(argv[2], "wb");
 
-  typedef struct {
-    uint8_t code;
-    uint8_t length;
-  } HuffCode;
-
-  HuffCode huff_codes[2];
-  huff_codes[0].code = 0b110;
-  huff_codes[0].length = 3;
-  huff_codes[1].code = 0b1011;
-  huff_codes[1].length = 4;
-
-
-  BitWriter bw;
-  bw_init(&bw, output_file);
-
-  // Write the Huffman codes to the output file
-  for (int i = 0; i < 2; i++) {
-    bw_write_bit(&bw, huff_codes[i].code, huff_codes[i].length);
+  if (output_file == NULL) {
+    fprintf(stderr, "Error opening %s: %s\n", argv[2], strerror(errno));
+    return 1;
   }
 
+  // Pack the file using the frequency map
+  if (pack_file(file, output_file, &freq_map) != 0) {
+    fprintf(stderr, "Error packing file\n");
+    fclose(output_file);
+    return 1;
+  }
 
-  // Flush any remaining bits in the buffer
-  bw_flush(&bw);
-  fclose(output_file);    
+  // Close the files
+  fclose(file);
+  fclose(output_file);
 
 
   return 0;

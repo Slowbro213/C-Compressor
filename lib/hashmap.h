@@ -2,10 +2,11 @@
 #define HASHMAP_H
 
 #include <stdint.h>  
+#include <stddef.h>
 
 typedef struct { 
     uint8_t order[256];
-    uint8_t count;
+    int count;
     struct {
         unsigned int freq;
         uint32_t code;
@@ -23,10 +24,13 @@ void bfm_decrement(ByteFreqMap *map, uint8_t key);
 
 void bfm_sort_by_freq(ByteFreqMap *map);
 void bfm_huffman_tree(ByteFreqMap *map);
+uint8_t bfm_get_code(const ByteFreqMap *map, uint8_t key);
 
 
 void bfm_print(const ByteFreqMap *map);
 void bfm_print_by_order(const ByteFreqMap *map);
+
+void count_frequencies(uint8_t* chunk, size_t size, void* args);
 
 
 #endif // HASHMAP_H
